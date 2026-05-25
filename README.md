@@ -5,7 +5,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
 
 > **Trình bày tại:** HỘI THẢO KHOA HỌC QUỐC GIA VỀ CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG (ICT) 2026    
-> **Địa điểm:** Đồng Tháp   
+> **Địa điểm:** Trường Đại học Tiền Giang, Đồng Tháp   
 > **Ngày:** 22/5/2026
 
 ## 📋 Tổng quan
