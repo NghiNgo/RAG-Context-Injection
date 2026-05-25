@@ -1,82 +1,106 @@
-# Optimization of Retrieval in RAG Systems via Active Context Injection and Semi-Structured Data Flattening
+# Tối ưu hóa truy xuất trong hệ thống RAG thông qua kỹ thuật bổ sung ngữ cảnh chủ động và làm phẳng dữ liệu bán cấu trúc
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
-[![Hội thảo: ICT 2026](https://img.shields.io/badge/Presented%20at-ICT%202026-orange.svg)](#)
 
-Source code and dataset for the paper: *"Tối ưu hóa truy xuất trong hệ thống RAG thông qua kỹ thuật bổ sung ngữ cảnh chủ động và làm phẳng dữ liệu bán cấu trúc"* presented at the 11th National Scientific Conference on Information and Communication Technology (ICT), Dong Thap, Vietnam (May 2026).
+> **Trình bày tại:** HỘI THẢO KHOA HỌC QUỐC GIA VỀ CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG (ICT) 2026
+> **Địa điểm:** Đồng Tháp
+> **Ngày:** 22/5/2026
 
----
+## 📋 Tổng quan
 
-## 📋 Overview
+Nghiên cứu này đề xuất một quy trình tiền xử lý dữ liệu ở tầng biểu diễn (Data Representation Layer) nhằm cải thiện độ chính xác truy xuất cho hệ thống RAG khi xử lý dữ liệu bán cấu trúc (JSON) hoặc danh sách phân cấp dài. Phương pháp kết hợp hai kỹ thuật: làm phẳng dữ liệu sang ngôn ngữ tự nhiên (Natural Language Flattening) và bổ sung ngữ cảnh chủ động (Context Injection) để đảm bảo tính độc lập ngữ nghĩa cho từng phân đoạn văn bản (chunks).
 
-This study addresses the context loss and structural fragmentation challenges encountered when processing semi-structured data (e.g., JSON, long lists) in Retrieval-Augmented Generation (RAG) pipelines. 
+### 🎯 Vấn đề giải quyết
+- **Đứt gãy cấu trúc logic:** Các thuật toán phân mảnh truyền thống (Fixed-size/Recursive) cắt ngang các khối dữ liệu JSON phân cấp sâu.
+- **Mất ngữ cảnh định danh (Context Loss):** Các phân đoạn phía dưới bị cô lập khỏi siêu dữ liệu định danh cấp cao (top-level metadata), gây ra hiện tượng ảo giác (hallucination) ở mô hình ngôn ngữ lớn (LLM).
 
-Traditional chunking strategies often break hierarchical logical relationships, stripping lower-level tokens of their parent metadata. We propose a data preprocessing framework combining **Natural Language Flattening** and **Active Context Injection** to ensure semantic independence for each chunk before embedding vectorization.
+### 💡 Giải pháp đề xuất
+Quy trình tiền xử lý kiểm soát phân mảnh chủ động (Controlled Chunking):
+- **Làm phẳng dữ liệu:** Chuyển đổi các cặp key-value lồng nhau thành các mệnh đề ngôn ngữ tự nhiên mạch lạc.
+- **Bổ sung ngữ cảnh chủ động:** Lặp lại các chuỗi siêu dữ liệu định danh cố định vào đầu mỗi phân đoạn logic trước khi thực hiện quá trình nhúng (embedding).
 
-### Key Contributions
-* **Data Representation Layer Optimization:** Converts key-value structures into coherent natural language propositions.
-* **Active Context Injection:** Periodically injects high-level identification metadata into localized logical blocks.
-* **Controlled Chunking Strategy:** Eliminates arbitrary text splitting across logical units without requiring complex parent-child retrieval architectures.
-
----
-
-## 🏗️ Data Preprocessing Pipeline
+## 🏗️ Kiến trúc hệ thống
 
 
 ```
 
-┌──────────────────────┐     ┌──────────────────────┐     ┌──────────────────────┐
-│   Raw Data (JSON)    │     │   Data Flattening    │     │  Context Injection   │
-│  Hierarchical Tree   │───▶ │  Natural Language   │───▶ │  Injected Metadata   │
-│  (Fragmented Chunks) │     │     Propositions     │     │ (Semantic Autonomy)  │
-└──────────────────────┘     └──────────────────────┘     └──────────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  Dữ liệu thô    │    │ Làm phẳng & Gắn │    │  Mã hóa Vector  │
+│     (JSON)      │───▶│ Ngữ cảnh Cố định│───▶│   & Lưu trữ     │
+│                 │    │  (Plain Text)   │    │  (Chunknig 1K)  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 │
 ▼
-┌──────────────────────┐     ┌──────────────────────┐     ┌──────────────────────┐
-│  Evaluation (RAGAS)  │     │   Inference Model    │     │  Vector DB Storing   │
-│  GPT-4o-mini Judge   │◀─── │  Llama-3.1-8b (API)  │◀─── │  Gemini Embedding    │
-└──────────────────────┘     └──────────────────────┘     └──────────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Đánh giá tự động│    │ Mô hình Suy luận│    │ Hệ thống RAG    │
+│  Framework RAGAS│◀───│ Llama-3.1-8b API│◀───│ AnythingLLM     │
+│ (GPT-4o-mini J.)│    │ (Local ready)   │    │ (Docker/Ubuntu) │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 
 ```
 
----
+### Luồng xử lý chính:
+1. **Tiền xử lý**: Trích xuất dữ liệu JSON → Làm phẳng sang văn bản tự nhiên → Gắn siêu dữ liệu định danh.
+2. **Lưu trữ & Truy xuất**: Nạp vào AnythingLLM → Nhúng vector với Gemini Embedding → Kiểm soát phân mảnh theo khối logic.
+3. **Tạo sinh & Đánh giá**: Truy vấn qua API Llama-3.1-8b → Chấm điểm tự động bằng mô hình giám khảo GPT-4o-mini (RAGAS).
 
-## 📊 Experimental Evaluation
+## 📊 Kết quả thực nghiệm
 
-The methodology was validated using a real-world admissions dataset from Nha Trang University and evaluated via the **RAGAS framework** (LLM-as-a-Judge with `GPT-4o-mini`).
+Hiệu năng hệ thống được đánh giá tự động dựa trên bộ dữ liệu kiểm chuẩn (Ground Truth) gồm 50 câu hỏi truy vấn về thông tin tuyển sinh của Trường Đại học Nha Trang.
 
-### Metrics Summary (Average over 50 Ground Truth Queries)
+### Thống kê thang đo RAGAS (Trung bình trên 50 truy vấn)
+| Thang đo (Metrics) | Baseline 1 (JSON thô) | Baseline 2 (Markdown thô) | Phương pháp đề xuất |
+|--------------------|-----------------------|---------------------------|---------------------|
+| Context Precision  | 0.7933                | 0.7817                    | **0.8556 (+6.23%)** |
+| Faithfulness       | 0.5484                | 0.6371                    | **0.7990 (+16.19%)**|
+| Answer Correctness | 0.5524                | 0.6181                    | **0.7017 (+8.36%)** |
 
-| Evaluation Metric | Baseline 1 (Raw JSON) | Baseline 2 (Raw Markdown) | Proposed Approach |
-| :--- | :---: | :---: | :---: |
-| **Context Precision** | 0.7933 | 0.7817 | **0.8556 (+6.23%)** |
-| **Faithfulness** | 0.5484 | 0.6371 | **0.7990 (+16.19%)** |
-| **Answer Correctness** | 0.5524 | 0.6181 | **0.7017 (+8.36%)** |
+### Đánh giá sự đánh đổi (Trade-offs):
+- Kỹ thuật lặp lại siêu dữ liệu làm gia tăng **18%** tổng số lượng token của cơ sở dữ liệu vector.
+- Độ trễ hệ thống tăng thêm trung bình **45ms** ở pha nhúng và **120ms** ở pha tạo sinh, đổi lại sự gia tăng vượt trội về độ chính xác và giảm thiểu tối đa hiện tượng ảo giác.
 
-*Note: The metadata repetition introduces an ~18% increase in total vector storage tokens, with a marginal latency trade-off (~120ms), while significantly improving precision and minimizing hallucinations.*
+## 🛠️ Công nghệ sử dụng
 
----
+- **Hạ tầng & Điều phối**: AnythingLLM (Dockerized), Linux (Ubuntu 24.04)
+- **Mô hình nhúng (Embedding)**: Google Gemini Embedding 001 API
+- **Mô hình ngôn ngữ (LLM)**: Llama-3.1-8b-instant (Cloud API Gateway / Hỗ trợ Local Deployment)
+- **Mô hình giám khảo (Judge)**: OpenAI GPT-4o-mini (Tham số temperature = 0)
+- **Thư viện đánh giá**: Framework RAGAS (Đã tinh chỉnh và Việt hóa bộ hệ thống prompt nội bộ)
+- **Tham số phân mảnh**: Chunk Size = 1000 tokens, Chunk Overlap = 200 tokens
 
-## 🛠️ System Configuration & Environment
+## 📝 Dữ liệu thực nghiệm
 
-* **Orchestration Platform:** AnythingLLM (Dockerized Deployment)
-* **Host OS:** Linux (Ubuntu 24.04)
-* **Embedding Core:** Google Gemini Embedding 001 API
-* **Inference Engine:** Llama-3.1-8b-instant (Cloud API Gateway / Local Deployment Compatible)
-* **Chunk Parameters:** Size = 1000 tokens, Overlap = 200 tokens
+- **Cơ sở tri thức**: Đề án tuyển sinh Đại học chính quy năm 2025 và 2026 của Trường Đại học Nha Trang.
+- **Độ phức tạp**: Bao gồm điểm chuẩn của 50 mã ngành đào tạo, tổ hợp môn xét tuyển, và các quy định điều kiện phụ đi kèm.
+- **Bộ dữ liệu kiểm thử**: 50 câu hỏi (15 câu trích xuất đơn lẻ, 15 câu so sánh đa ngành, 20 câu tổng hợp logic) được thẩm định bởi chuyên gia (Human-in-the-loop).
 
----
+## 🔮 Hướng phát triển
 
-## 📝 Citation
+- [ ] **Mô hình nội bộ (Green AI)**: Triển khai toàn bộ hệ thống trên các mô hình ngôn ngữ nhỏ (Small/Local Models) được tinh chỉnh riêng cho tiếng Việt.
+- [ ] **Thuật toán nâng cao**: Tích hợp thử nghiệm cùng các chiến lược phân định ranh giới ngữ cảnh như Parent Document Retrieval (PDR).
+- [ ] **Mở rộng miền dữ liệu**: Thử nghiệm và kiểm chứng khả năng khái quát hóa của phương pháp trên các định dạng bán cấu trúc phức tạp khác ngoài giáo dục.
 
-If you utilize this approach or dataset in your research, please cite the conference paper:
+## 👥 Tác giả
+
+- **Ngô Nguyễn Tường Nghi** - Khoa Công nghệ thông tin, Trường Đại học Nha Trang
+  - Email: nghinnt@ntu.edu.vn
+  
+- **Lê Thị Bích Hằng** - Khoa Công nghệ thông tin, Trường Đại học Nha Trang
+  - Email: hangltb@ntu.edu.vn
+
+- **Nguyễn Đình Hưng** - Khoa Công nghệ thông tin, Trường Đại học Nha Trang
+  - Email: hungnd@ntu.edu.vn
+
+## 📄 Trích dẫn
+
+Nếu bạn sử dụng nghiên cứu này, vui lòng trích dẫn:
 
 ```bibtex
 @inproceedings{ngo2026rag,
   title={Tối ưu hóa truy xuất trong hệ thống RAG thông qua kỹ thuật bổ sung ngữ cảnh chủ động và làm phẳng dữ liệu bán cấu trúc},
-  author={Ngo, Tuong-Nghi and Lê, Thị Bích Hằng and Nguyễn, Đình Hưng},
+  author={Nghi, Ngô Nguyễn Tường and Hằng, Lê Thị Bích và Hưng, Nguyễn Đình},
   booktitle={Hội thảo khoa học Quốc gia về Công nghệ thông tin và Truyền thông (ICT)},
   year={2026},
   address={Đồng Tháp, Việt Nam}
@@ -84,8 +108,6 @@ If you utilize this approach or dataset in your research, please cite the confer
 
 ```
 
----
-
 ## 📜 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Dự án này được phát hành dưới [MIT License](https://www.google.com/search?q=LICENSE).
