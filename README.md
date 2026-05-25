@@ -4,8 +4,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
 
-> **Trình bày tại:** HỘI THẢO KHOA HỌC QUỐC GIA VỀ CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG (ICT) 2026
-> **Địa điểm:** Đồng Tháp
+> **Trình bày tại:** HỘI THẢO KHOA HỌC QUỐC GIA VỀ CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG (ICT) 2026    
+> **Địa điểm:** Đồng Tháp   
 > **Ngày:** 22/5/2026
 
 ## 📋 Tổng quan
